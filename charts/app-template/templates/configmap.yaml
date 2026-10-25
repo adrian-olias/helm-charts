@@ -1,0 +1,26 @@
+{{- if .Values.env }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "app-template.fullname" . }}-env
+  labels:
+    {{- include "app-template.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}
+{{- if .Values.configFiles }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "app-template.fullname" . }}-files
+  labels:
+    {{- include "app-template.labels" . | nindent 4 }}
+data:
+  {{- range .Values.configFiles }}
+  {{ .name }}: |
+    {{- .content | nindent 4 }}
+  {{- end }}
+{{- end }}

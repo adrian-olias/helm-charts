@@ -1,0 +1,12 @@
+{{- if .Values.quota.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: guardrails
+  namespace: {{ include "argocd-template.namespace" . }}
+  labels:
+    {{- include "argocd-template.labels" . | nindent 4 }}
+spec:
+  hard:
+    {{- toYaml .Values.quota.hard | nindent 4 }}
+{{- end }}

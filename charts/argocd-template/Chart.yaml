@@ -1,0 +1,11 @@
+apiVersion: v2
+name: argocd-template
+description: Template for the Argo CD Applications of a namespace, plus the namespace and its guardrails.
+type: application
+version: 0.1.0
+home: https://github.com/adrian-olias/helm-charts
+sources:
+  - https://github.com/adrian-olias/helm-charts
+maintainers:
+  - name: Adrian Olias
+    url: https://github.com/adrian-olias

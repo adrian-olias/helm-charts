@@ -1,0 +1,72 @@
+# One release of this chart = one namespace.
+# It creates the namespace, its guardrails, an AppProject that keeps its apps
+# inside it, and one Argo CD Application per app.
+
+# The namespace is <name>-<env>.
+name: ""
+env: ""
+
+# Apps that run in the namespace. Each one is deployed from its own wrapper,
+# <appWrapperPath>/<name>-<env>, with the values files below.
+apps: []
+#  - name: my-app
+#    enabled: true                       # optional, defaults to true
+#    path: app-wrapper/my-app-prod       # optional
+#    valueFiles: [values.yaml]           # optional, defaults to appValueFiles
+#    revision: main                      # optional, defaults to repo.revision
+
+# Folder of the repo that holds one wrapper folder per app and environment.
+appWrapperPath: app-wrapper
+
+# Values files of every app wrapper, in order: later files win.
+appValueFiles:
+  - configmap.yaml
+  - values.yaml
+  - secrets.yaml
+
+# Config repo the apps are read from.
+repo:
+  url: ""
+  revision: main
+
+# Where Argo CD runs. Applications and AppProjects are created there.
+argocdNamespace: argocd
+
+# Pod Security Standard enforced on the namespace: privileged, baseline or restricted.
+podSecurity: restricted
+
+# Caps what the whole namespace can request.
+quota:
+  enabled: true
+  hard:
+    pods: "20"
+    requests.cpu: "2"
+    requests.memory: 2Gi
+    limits.memory: 4Gi
+
+# Defaults for containers that do not set their own resources,
+# so they still fit the quota above.
+limits:
+  enabled: true
+  default:
+    memory: 256Mi
+  defaultRequest:
+    cpu: 10m
+    memory: 32Mi
+  max:
+    cpu: "1"
+    memory: 1Gi
+
+# Only traffic from the namespace itself and from these namespaces gets in.
+# k3s runs Traefik, the ingress controller, in kube-system.
+networkPolicy:
+  enabled: true
+  allowFrom:
+    - kube-system
+
+syncPolicy:
+  automated:
+    prune: true
+    selfHeal: true
+  syncOptions:
+    - PruneLast=true

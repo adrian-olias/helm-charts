@@ -1,0 +1,118 @@
+# Defaults for app-template.
+# A wrapper chart only needs to set what differs from these.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Extra labels added to every resource.
+commonLabels: {}
+
+image:
+  repository: nginxinc/nginx-unprivileged
+  # Defaults to the chart appVersion.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+replicaCount: 1
+
+# Port the container listens on. Exposed as the "http" port.
+containerPort: 8080
+
+podAnnotations: {}
+podLabels: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  # Most web services never talk to the Kubernetes API.
+  automountToken: false
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# Writable emptyDir at /tmp, needed when the root filesystem is read-only.
+tmpDir:
+  enabled: true
+
+# No CPU limit on purpose: it only causes throttling.
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+# Environment variables, loaded from a ConfigMap with envFrom.
+env: {}
+#  LOG_LEVEL: info
+
+# Files mounted from a ConfigMap.
+configFiles: []
+#  - name: app-config.yaml          # key in the ConfigMap
+#    mountPath: /etc/app/config.yaml
+#    content: |
+#      key: value
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  # k3s ships Traefik as its ingress controller.
+  className: traefik
+  annotations: {}
+  hosts: []
+  #  - host: example.com
+  #    paths:                       # defaults to "/" (Prefix)
+  #      - path: /
+  #        pathType: Prefix
+  tls: []
+  #  - secretName: example-tls
+  #    hosts: [example.com]
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Needs the Prometheus Operator CRDs in the cluster.
+serviceMonitor:
+  enabled: false
+  path: /metrics
+  interval: 30s
+  labels: {}
+
+# Needs the Sealed Secrets controller. Values must already be encrypted with kubeseal.
+sealedSecret:
+  enabled: false
+  encryptedData: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

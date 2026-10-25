@@ -1,0 +1,33 @@
+{{- $namespace := include "argocd-template.namespace" . }}
+{{- range .Values.apps }}
+{{- if or (not (hasKey . "enabled")) .enabled }}
+{{- $app := required "every app needs a name" .name }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s" $app $.Values.env | trunc 63 | trimSuffix "-" }}
+  namespace: {{ $.Values.argocdNamespace }}
+  labels:
+    {{- include "argocd-template.labels" $ | nindent 4 }}
+  finalizers:
+    # Deleting the Application also deletes what it deployed.
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $namespace }}
+  source:
+    repoURL: {{ $.Values.repo.url | quote }}
+    targetRevision: {{ default $.Values.repo.revision .revision | quote }}
+    path: {{ default (printf "%s/%s-%s" $.Values.appWrapperPath $app $.Values.env) .path | quote }}
+    helm:
+      valueFiles:
+        {{- toYaml (default $.Values.appValueFiles .valueFiles) | nindent 8 }}
+      # An app without config or secrets can leave those files out.
+      ignoreMissingValueFiles: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ $namespace }}
+  syncPolicy:
+    {{- toYaml $.Values.syncPolicy | nindent 4 }}
+{{- end }}
+{{- end }}

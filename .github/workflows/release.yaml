@@ -1,0 +1,78 @@
+name: release
+
+# Checks every chart, then publishes the ones whose version is not in GHCR yet.
+# Bumping `version` in a Chart.yaml is what triggers a new release.
+# Pull requests only run the checks.
+#
+# By hand, from WSL, if you ever need to publish without this workflow:
+#
+#   1. Log in to GHCR with a GitHub token that has the write:packages scope:
+#        echo <token> | helm registry login ghcr.io -u adrian-olias --password-stdin
+#
+#   2. Check the chart:
+#        helm lint --strict charts/app-template
+#        helm lint --strict charts/argocd-template --set name=ci,env=ci,repo.url=https://example.com/repo.git
+#
+#   3. Package it and push it:
+#        helm package charts/<chart> --destination dist
+#        helm push dist/<chart>-<version>.tgz oci://ghcr.io/adrian-olias/charts
+#
+#   4. First time only: make the package public on GitHub (Packages → the chart
+#      → Package settings → Change visibility), or Argo CD cannot pull it.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - "charts/**"
+      - ".github/workflows/release.yaml"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: oci://ghcr.io/${{ github.repository_owner }}/charts
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: azure/setup-helm@v5
+
+      - name: Check every chart
+        run: |
+          set -euo pipefail
+          for chart in charts/*/; do
+            # argocd-template refuses to render without these.
+            case "$(basename "$chart")" in
+              argocd-template) values=(--set name=ci,env=ci,repo.url=https://example.com/repo.git) ;;
+              *) values=() ;;
+            esac
+            helm lint --strict "$chart" "${values[@]}"
+            helm template check "$chart" "${values[@]}" > /dev/null
+          done
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$TOKEN" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Publish new versions
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for chart in charts/*/; do
+            name=$(yq '.name' "$chart/Chart.yaml")
+            version=$(yq '.version' "$chart/Chart.yaml")
+            if helm show chart "$REGISTRY/$name" --version "$version" > /dev/null 2>&1; then
+              echo "$name $version is already published, skipping"
+              continue
+            fi
+            helm package "$chart" --destination dist
+            helm push "dist/$name-$version.tgz" "$REGISTRY"
+          done

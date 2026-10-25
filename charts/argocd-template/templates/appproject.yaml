@@ -1,0 +1,28 @@
+{{- $namespace := include "argocd-template.namespace" . }}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $namespace }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "argocd-template.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  description: Apps of {{ .Values.name }} in {{ .Values.env }}
+  sourceRepos:
+    - {{ required "repo.url is required" .Values.repo.url | quote }}
+  # The apps can only deploy into their own namespace...
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: {{ $namespace }}
+  # ...cannot create cluster-wide resources...
+  clusterResourceWhitelist: []
+  # ...and cannot touch the guardrails this chart sets.
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: ResourceQuota
+    - group: ""
+      kind: LimitRange
+    - group: networking.k8s.io
+      kind: NetworkPolicy

@@ -1,0 +1,10 @@
+# Packaged charts and pulled dependencies
+dist/
+*.tgz
+charts/*/charts/
+charts/*/Chart.lock
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
