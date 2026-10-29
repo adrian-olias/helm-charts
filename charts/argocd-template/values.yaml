@@ -1,13 +1,11 @@
-# One release of this chart = one environment.
-# It creates one AppProject, namespace guardrails for every app, and one
-# Argo CD Application per app.
+# One release of this chart = one environment and creates its child
+# Applications.
 
 # The release name identifies the environment and the project.
 name: ""
 env: ""
 
-# Each app gets its own namespace. By default its Application is named
-# <name>-<env> and its wrapper is <appWrapperPath>/<name>-<env>.
+# Each app gets its own Application and wrapper path.
 apps: []
 #  - name: my-app
 #    namespace: my-app-prod              # required
@@ -35,35 +33,6 @@ argocdNamespace: argocd
 
 # Pod Security Standard enforced on the namespace: privileged, baseline or restricted.
 podSecurity: restricted
-
-# Defaults applied to every application namespace.
-quota:
-  enabled: true
-  hard:
-    pods: "20"
-    requests.cpu: "2"
-    requests.memory: 2Gi
-    limits.memory: 4Gi
-
-# Defaults for containers that do not set their own resources,
-# so they still fit the quota above.
-limits:
-  enabled: true
-  default:
-    memory: 256Mi
-  defaultRequest:
-    cpu: 10m
-    memory: 32Mi
-  max:
-    cpu: "1"
-    memory: 1Gi
-
-# Only traffic from the namespace itself and from these namespaces gets in.
-# k3s runs Traefik, the ingress controller, in kube-system.
-networkPolicy:
-  enabled: true
-  allowFrom:
-    - kube-system
 
 syncPolicy:
   automated:

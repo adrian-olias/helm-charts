@@ -13,7 +13,7 @@ metadata:
     # Deleting the Application also deletes what it deployed.
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: {{ include "argocd-template.projectName" $ }}
+  project: {{ default "default" $.Values.project }}
   source:
     repoURL: {{ $.Values.repo.url | quote }}
     targetRevision: {{ default $.Values.repo.revision .revision | quote }}
