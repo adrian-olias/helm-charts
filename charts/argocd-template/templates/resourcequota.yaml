@@ -1,12 +1,21 @@
-{{- if .Values.quota.enabled }}
+{{- range .Values.apps }}
+{{- if and (or (not (hasKey . "enabled")) .enabled) $.Values.quota.enabled }}
+{{- $app := required "every app needs a name" .name }}
+{{- $namespace := required (printf "app %s needs a namespace" $app) .namespace }}
+{{- $quota := $.Values.quota.hard }}
+{{- if and (hasKey . "quota") .quota (hasKey .quota "hard") }}
+{{- $quota = .quota.hard }}
+{{- end }}
+---
 apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: guardrails
-  namespace: {{ include "argocd-template.namespace" . }}
+  namespace: {{ $namespace }}
   labels:
-    {{- include "argocd-template.labels" . | nindent 4 }}
+    {{- include "argocd-template.labels" $ | nindent 4 }}
 spec:
   hard:
-    {{- toYaml .Values.quota.hard | nindent 4 }}
+    {{- toYaml $quota | nindent 4 }}
+{{- end }}
 {{- end }}

@@ -1,15 +1,16 @@
-# One release of this chart = one namespace.
-# It creates the namespace, its guardrails, an AppProject that keeps its apps
-# inside it, and one Argo CD Application per app.
+# One release of this chart = one environment.
+# It creates one AppProject, namespace guardrails for every app, and one
+# Argo CD Application per app.
 
-# The namespace is <name>-<env>.
+# The release name identifies the environment and the project.
 name: ""
 env: ""
 
-# Apps that run in the namespace. Each one is deployed from its own wrapper,
-# <appWrapperPath>/<name>-<env>, with the values files below.
+# Each app gets its own namespace. By default its Application is named
+# <name>-<env> and its wrapper is <appWrapperPath>/<name>-<env>.
 apps: []
 #  - name: my-app
+#    namespace: my-app-prod              # required
 #    enabled: true                       # optional, defaults to true
 #    path: app-wrapper/my-app-prod       # optional
 #    valueFiles: [values.yaml]           # optional, defaults to appValueFiles
@@ -35,7 +36,7 @@ argocdNamespace: argocd
 # Pod Security Standard enforced on the namespace: privileged, baseline or restricted.
 podSecurity: restricted
 
-# Caps what the whole namespace can request.
+# Defaults applied to every application namespace.
 quota:
   enabled: true
   hard:

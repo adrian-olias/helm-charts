@@ -1,12 +1,18 @@
+{{- range .Values.apps }}
+{{- if or (not (hasKey . "enabled")) .enabled }}
+{{- $app := required "every app needs a name" .name }}
+{{- $namespace := required (printf "app %s needs a namespace" $app) .namespace }}
+---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ include "argocd-template.namespace" . }}
+  name: {{ $namespace }}
   labels:
-    {{- include "argocd-template.labels" . | nindent 4 }}
+    {{- include "argocd-template.labels" $ | nindent 4 }}
     # Pod Security Admission: rejects pods that break the chosen standard.
-    pod-security.kubernetes.io/enforce: {{ .Values.podSecurity }}
-    pod-security.kubernetes.io/warn: {{ .Values.podSecurity }}
+    pod-security.kubernetes.io/enforce: {{ $.Values.podSecurity }}
+    pod-security.kubernetes.io/warn: {{ $.Values.podSecurity }}
   annotations:
-    # Created before anything that lives inside it.
     argocd.argoproj.io/sync-wave: "-2"
+{{- end }}
+{{- end }}

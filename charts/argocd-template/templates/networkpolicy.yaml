@@ -1,14 +1,18 @@
 {{- if .Values.networkPolicy.enabled }}
-{{- $namespace := include "argocd-template.namespace" . }}
+{{- range .Values.apps }}
+{{- if or (not (hasKey . "enabled")) .enabled }}
+{{- $app := required "every app needs a name" .name }}
+{{- $namespace := required (printf "app %s needs a namespace" $app) .namespace }}
 # Once a pod is selected by an ingress policy, any traffic not allowed by
 # some policy is dropped. These are the only ways in.
+---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-from-same-namespace
   namespace: {{ $namespace }}
   labels:
-    {{- include "argocd-template.labels" . | nindent 4 }}
+    {{- include "argocd-template.labels" $ | nindent 4 }}
 spec:
   podSelector: {}
   policyTypes:
@@ -16,7 +20,7 @@ spec:
   ingress:
     - from:
         - podSelector: {}
-{{- range .Values.networkPolicy.allowFrom }}
+{{- range $.Values.networkPolicy.allowFrom }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -34,5 +38,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: {{ . }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}

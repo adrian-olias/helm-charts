@@ -1,24 +1,29 @@
-{{- if .Values.limits.enabled }}
+{{- range .Values.apps }}
+{{- if and (or (not (hasKey . "enabled")) .enabled) $.Values.limits.enabled }}
+{{- $app := required "every app needs a name" .name }}
+{{- $namespace := required (printf "app %s needs a namespace" $app) .namespace }}
+---
 apiVersion: v1
 kind: LimitRange
 metadata:
   name: guardrails
-  namespace: {{ include "argocd-template.namespace" . }}
+  namespace: {{ $namespace }}
   labels:
-    {{- include "argocd-template.labels" . | nindent 4 }}
+    {{- include "argocd-template.labels" $ | nindent 4 }}
 spec:
   limits:
     - type: Container
-      {{- with .Values.limits.default }}
+      {{- with $.Values.limits.default }}
       default:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.limits.defaultRequest }}
+      {{- with $.Values.limits.defaultRequest }}
       defaultRequest:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.limits.max }}
+      {{- with $.Values.limits.max }}
       max:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- end }}
 {{- end }}

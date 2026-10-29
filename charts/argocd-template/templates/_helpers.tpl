@@ -1,5 +1,5 @@
-{{- define "argocd-template.namespace" -}}
-{{- printf "%s-%s" (required "name is required" .Values.name) (required "env is required" .Values.env) -}}
+{{- define "argocd-template.projectName" -}}
+{{- required "name is required" .Values.name -}}
 {{- end -}}
 
 {{- define "argocd-template.labels" -}}
