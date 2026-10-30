@@ -29,7 +29,10 @@ repo:
   revision: main
 
 # Namespace where the root and child Applications are stored.
-argocdNamespace: applications-prod
+argocdNamespace: argocd
+
+# AppProject of the child Applications.
+project: default
 
 # Pod Security Standard enforced on the namespace: privileged, baseline or restricted.
 podSecurity: restricted
