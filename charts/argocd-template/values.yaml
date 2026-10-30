@@ -28,8 +28,8 @@ repo:
   url: ""
   revision: main
 
-# Where Argo CD runs. Applications and AppProjects are created there.
-argocdNamespace: argocd
+# Namespace where the root and child Applications are stored.
+argocdNamespace: applications-prod
 
 # Pod Security Standard enforced on the namespace: privileged, baseline or restricted.
 podSecurity: restricted
@@ -39,4 +39,5 @@ syncPolicy:
     prune: true
     selfHeal: true
   syncOptions:
+    - CreateNamespace=true
     - PruneLast=true

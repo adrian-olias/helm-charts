@@ -5,7 +5,7 @@ Charts for my cluster, published to GHCR as OCI artifacts.
 | Chart | What it deploys |
 |---|---|
 | [app-template](charts/app-template) | One app: Deployment, Service, Ingress and friends |
-| [argocd-template](charts/argocd-template) | The Argo CD Applications of a namespace, plus the namespace and its guardrails |
+| [argocd-template](charts/argocd-template) | The child Argo CD Applications for the applications namespace |
 
 Neither is installed directly. In
 [helm-charts-wrappers](https://github.com/adrian-olias/helm-charts-wrappers) each one is used
@@ -14,7 +14,7 @@ by a wrapper: a small chart that depends on it and only carries values.
 | Template (here) | Wrapper (in helm-charts-wrappers) |
 |---|---|
 | `app-template` | `app-wrapper/<app>-<env>/`: one folder per app and environment |
-| `argocd-template` | `argocd-wrapper/`: one `<name>-<env>.yaml` per namespace |
+| `argocd-template` | `argocd-wrapper/`: the values file for the applications root |
 
 ## Releasing
 
