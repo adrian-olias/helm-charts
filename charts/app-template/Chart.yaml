@@ -2,7 +2,7 @@ apiVersion: v2
 name: app-template
 description: Template for one app. Deployment, Service, Ingress and the optional extras.
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "0.1.0"
 home: https://github.com/adrian-olias/helm-charts
 sources:

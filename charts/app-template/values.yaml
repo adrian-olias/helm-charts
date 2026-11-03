@@ -30,6 +30,16 @@ serviceAccount:
   # Most web services never talk to the Kubernetes API.
   automountToken: false
 
+# Role in the app's own namespace, bound to its ServiceAccount, for the apps
+# that do talk to the Kubernetes API. Needs serviceAccount.automountToken too.
+# Leave it off when the platform manages the app's access.
+rbac:
+  create: false
+  rules: []
+  #  - apiGroups: [""]
+  #    resources: [pods]
+  #    verbs: [get, list]
+
 podSecurityContext:
   runAsNonRoot: true
   seccompProfile:
