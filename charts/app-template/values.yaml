@@ -17,6 +17,12 @@ imagePullSecrets: []
 
 replicaCount: 1
 
+# Deployment strategy; empty keeps the Kubernetes default (RollingUpdate).
+# Recreate stops the old pod before the new one starts, for apps that must
+# never run twice at once, such as a single writer on a volume.
+strategy: {}
+#  type: Recreate
+
 # Port the container listens on. Exposed as the "http" port.
 containerPort: 8080
 
@@ -75,6 +81,20 @@ readinessProbe:
 # Environment variables, loaded from a ConfigMap with envFrom.
 env: {}
 #  LOG_LEVEL: info
+
+# A PersistentVolumeClaim mounted at mountPath, for data that must survive
+# restarts. ReadWriteOnce: every pod using it must run on the same node.
+persistence:
+  enabled: false
+  mountPath: /data
+  # Required when enabled: each wrapper decides how much it needs, e.g. 100Mi.
+  size: ""
+  # Empty uses the cluster default (local-path on k3s).
+  storageClassName: ""
+  accessModes: [ReadWriteOnce]
+  # e.g. argocd.argoproj.io/sync-options: Delete=false to keep the data
+  # when the Application is deleted.
+  annotations: {}
 
 # Files mounted from a ConfigMap.
 configFiles: []
