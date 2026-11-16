@@ -7,7 +7,7 @@ name: release
 # By hand, from WSL, if you ever need to publish without this workflow:
 #
 #   1. Log in to GHCR with a GitHub token that has the write:packages scope:
-#        echo <token> | helm registry login ghcr.io -u adrian-olias --password-stdin
+#        echo <token> | helm registry login ghcr.io -u <github-user> --password-stdin
 #
 #   2. Check the chart:
 #        helm lint --strict charts/app-template
@@ -15,7 +15,7 @@ name: release
 #
 #   3. Package it and push it:
 #        helm package charts/<chart> --destination dist
-#        helm push dist/<chart>-<version>.tgz oci://ghcr.io/adrian-olias/charts
+#        helm push dist/<chart>-<version>.tgz oci://ghcr.io/<owner>/charts
 #
 #   4. First time only: make the package public on GitHub (Packages → the chart
 #      → Package settings → Change visibility), or Argo CD cannot pull it.
