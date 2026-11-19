@@ -1,41 +1,22 @@
-# One release of this chart = one environment and creates its child
-# Applications.
-
-# The release name identifies the environment and the project.
 name: ""
 env: ""
 
-# Each app gets its own Application and wrapper path.
 apps: []
-#  - name: my-app
-#    namespace: my-app-prod              # required
-#    enabled: true                       # optional, defaults to true
-#    path: app-wrapper/my-app-prod       # optional
-#    valueFiles: [values.yaml]           # optional, defaults to appValueFiles
-#    revision: main                      # optional, defaults to repo.revision
 
-# Folder of the repo that holds one wrapper folder per app and environment.
 appWrapperPath: app-wrapper
 
-# Values files of every app wrapper, in order: later files win.
 appValueFiles:
   - configmap.yaml
   - values.yaml
   - secrets.yaml
 
-# Config repo the apps are read from.
 repo:
   url: ""
   revision: main
 
-# Namespace where the root and child Applications are stored.
 argocdNamespace: argocd
 
-# AppProject of the child Applications.
 project: default
-
-# Pod Security Standard enforced on the namespace: privileged, baseline or restricted.
-podSecurity: restricted
 
 syncPolicy:
   automated:

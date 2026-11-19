@@ -1,15 +1,9 @@
-# Defaults for app-template.
-# A wrapper chart only needs to set what differs from these.
-
 nameOverride: ""
 fullnameOverride: ""
 
-# Extra labels added to every resource.
 commonLabels: {}
 
 image:
-  repository: nginxinc/nginx-unprivileged
-  # Defaults to the chart appVersion.
   tag: ""
   pullPolicy: IfNotPresent
 
@@ -17,13 +11,8 @@ imagePullSecrets: []
 
 replicaCount: 1
 
-# Deployment strategy; empty keeps the Kubernetes default (RollingUpdate).
-# Recreate stops the old pod before the new one starts, for apps that must
-# never run twice at once, such as a single writer on a volume.
 strategy: {}
-#  type: Recreate
 
-# Port the container listens on. Exposed as the "http" port.
 containerPort: 8080
 
 podAnnotations: {}
@@ -33,18 +22,11 @@ serviceAccount:
   create: true
   name: ""
   annotations: {}
-  # Most web services never talk to the Kubernetes API.
   automountToken: false
 
-# Role in the app's own namespace, bound to its ServiceAccount, for the apps
-# that do talk to the Kubernetes API. Needs serviceAccount.automountToken too.
-# Leave it off when the platform manages the app's access.
 rbac:
   create: false
   rules: []
-  #  - apiGroups: [""]
-  #    resources: [pods]
-  #    verbs: [get, list]
 
 podSecurityContext:
   runAsNonRoot: true
@@ -57,11 +39,9 @@ securityContext:
   capabilities:
     drop: ["ALL"]
 
-# Writable emptyDir at /tmp, needed when the root filesystem is read-only.
 tmpDir:
   enabled: true
 
-# No CPU limit on purpose: it only causes throttling.
 resources:
   requests:
     cpu: 10m
@@ -78,30 +58,17 @@ readinessProbe:
     path: /
     port: http
 
-# Environment variables, loaded from a ConfigMap with envFrom.
 env: {}
-#  LOG_LEVEL: info
 
-# A PersistentVolumeClaim mounted at mountPath, for data that must survive
-# restarts. ReadWriteOnce: every pod using it must run on the same node.
 persistence:
   enabled: false
   mountPath: /data
-  # Required when enabled: each wrapper decides how much it needs, e.g. 100Mi.
   size: ""
-  # Empty uses the cluster default (local-path on k3s).
   storageClassName: ""
   accessModes: [ReadWriteOnce]
-  # e.g. argocd.argoproj.io/sync-options: Delete=false to keep the data
-  # when the Application is deleted.
   annotations: {}
 
-# Files mounted from a ConfigMap.
 configFiles: []
-#  - name: app-config.yaml          # key in the ConfigMap
-#    mountPath: /etc/app/config.yaml
-#    content: |
-#      key: value
 
 service:
   type: ClusterIP
@@ -109,17 +76,10 @@ service:
 
 ingress:
   enabled: false
-  # k3s ships Traefik as its ingress controller.
   className: traefik
   annotations: {}
   hosts: []
-  #  - host: example.com
-  #    paths:                       # defaults to "/" (Prefix)
-  #      - path: /
-  #        pathType: Prefix
   tls: []
-  #  - secretName: example-tls
-  #    hosts: [example.com]
 
 autoscaling:
   enabled: false
@@ -131,14 +91,12 @@ podDisruptionBudget:
   enabled: false
   minAvailable: 1
 
-# Needs the Prometheus Operator CRDs in the cluster.
 serviceMonitor:
   enabled: false
   path: /metrics
   interval: 30s
   labels: {}
 
-# Needs the Sealed Secrets controller. Values must already be encrypted with kubeseal.
 sealedSecret:
   enabled: false
   encryptedData: {}
